@@ -1,0 +1,26 @@
+<assembly>
+    <id>distributions</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>true</useProjectArtifact>
+            <scope>runtime</scope>
+            <outputDirectory>javalib</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+                <include>LICENSE</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>target/apidocs</directory>
+            <outputDirectory>javadoc</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
