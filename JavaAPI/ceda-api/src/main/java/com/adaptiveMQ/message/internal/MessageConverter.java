@@ -30,7 +30,7 @@ import com.adaptiveMQ.utils.ConstsMessage;
 import com.adaptiveMQ.utils.Utils;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 import java.util.Random;
 import java.util.UUID;
@@ -42,7 +42,7 @@ public final class MessageConverter
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(MessageCacheList.class);
     private static final short MSG_VERSION = 0x2041; // 消息版本(2.0A)
     private static final Random random = new Random();
-    private static final BASE64Encoder m_base64Encoder = new BASE64Encoder();
+    private static final Base64 m_base64Encoder = new Base64();
 
     private static final AtomicInteger replySid = new AtomicInteger(1);
     private static final String m_strDot = ".";
@@ -55,7 +55,7 @@ public final class MessageConverter
     {
         byte[] random = new byte[16];
         MessageConverter.random.nextBytes(random);
-        return m_base64Encoder.encode(random);
+        return m_base64Encoder.encodeBase64String(random);
     }
 
     public static int getMaskInt()
