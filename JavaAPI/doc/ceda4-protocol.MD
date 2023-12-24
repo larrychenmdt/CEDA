@@ -1,6 +1,5 @@
 ## CEDA4 通讯协议
 
-整理了CEDA4底层通讯协议, CEDA5的协议修改另写文档。
 
 ### meta header 
 

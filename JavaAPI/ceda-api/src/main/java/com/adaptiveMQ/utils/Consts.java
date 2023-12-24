@@ -38,6 +38,9 @@ public final class Consts
     public static final int MAX_PASSWORD_LEN = 128;
     public static final int MAX_CLIENT_ID_LEN = 128;
 
+    public static final int MAX_GROUP_FIELD_LEN = 32768;
+    public static final int MAX_BLOB_FIELD_LEN = 10240000;
+
     public static final String BlankStr = "";
     public static final  char SYSTEM_RESERVED_CHAR = '$';
 

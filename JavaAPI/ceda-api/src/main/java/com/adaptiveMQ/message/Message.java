@@ -18,6 +18,7 @@
 
 package com.adaptiveMQ.message;
 
+import com.adaptiveMQ.utils.Consts;
 import com.adaptiveMQ.utils.ConstsMessage;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
@@ -87,9 +88,10 @@ public class Message extends IMessage
     /**
      * 分组消息字段最大长度
      */
-    public static int maxGroupFieldLength = 32768;
+    public static int maxGroupFieldLength = Consts.MAX_GROUP_FIELD_LEN;
     //最大blob字段消息
-    public static int maxBlobFieldLength = 10240000;
+    public static int maxBlobFieldLength = Consts.MAX_BLOB_FIELD_LEN;
+
     private int iMessageId;
     //private byte _nIsRedeliveried;
     //private byte _nCacheMessageID;
