@@ -1,6 +1,6 @@
 # CEDA Java API
 
-基本概念
+## 基本概念
 
 CEDA Java API采用类似socket的C/S架构, 包含了客户端API, 服务端API, 
 及消息API, 同时为集群功能提供了集群API。 
@@ -26,7 +26,7 @@ Java API 实践简化示意图
                                                  |---------------|
 
 ```     
-服务端API: 
+## 服务端API: 
 
 com.adaptiveMQ.server是服务端API, 工作模型如下:
 
@@ -69,7 +69,7 @@ com.adaptiveMQ.server是服务端API, 工作模型如下:
     
     5.2 清理客户端相关数据 
 
-客户端API
+## 客户端API
 
 com.adaptiveMQ.client是客户端API, 工作模型如下:
 
@@ -96,7 +96,7 @@ com.adaptiveMQ.client是客户端API, 工作模型如下:
     5.1 主动断开会话或者被动关闭
     
 
-集群API
+## 集群API
 
 com.adaptiveMQ.cluster是集群API, 
 集群API由注册中心连接器RegisterHandler和集群客户端ClusterClient组成, 
@@ -143,6 +143,7 @@ ROUNDROBIN在BALANCE基础上加入了RR算法
 
 ALL表示完全多活模式
 
+## 消息API  
 com.adaptiveMQ.message是消息API  
 
 
@@ -150,14 +151,14 @@ CEDA Java API使用IMessage/Message/ControlMessage的体系来包装所有的数
 Message表示业务消息由业务层读写, ControlMessage表示控制消息由框架读写
 Message包含四个重要字段分别是:
 
-SvrID
+### SvrID
 
 表示服务在集群中的唯一ID, 当CEDA服务端向注册中心注册时会填写Name, 即SvrID, 
 当两个节点间使用点对点直连模式时, 该字段没有实际作用, 但当使用消息代理连接时, 该字段起到路由的作用。
 即当客户端向服务端发起RPC请求或者订阅时, 如果经过消息代理, 那么代理将根据该
 字段来找到对应的服务端。
 
-Destination
+### Destination
 
 该字表示消息的主题, 在REQ/REP的情况下, 该消息由客户端填写, 
 服务端根据Destination将消息交给对应的处理函数, 
@@ -165,7 +166,7 @@ Destination
 IClientSession::subscribe(List<BaseDestination> destinationList, IMessageListener listener); 
 来订阅感兴趣的消息, 服务端通过Message的Destination来完成消息的匹配投递。
 
-ReplyTo和ConnectionID
+### ReplyTo和ConnectionID
 
 
 该两个字段不需要业务层关注, 这里简述其工作原理, ReplyTo和ConnectionID一起
@@ -176,14 +177,14 @@ ConnectionID仅在REQ经过消息代理时有意义, 该字段是由服务端分
 在收到REP时候查找对应的客户端连接。
 
 
-消息匹配逻辑:
+### 消息匹配逻辑
 
 CEDA中的消息主题和RabbitMQ类似, 由"."分段表示, 
 当分段值为"\*"时, 表示该段会被理解为通配符号, 匹配有限可变长度的任意字符(除了"."本身), 
 当分段值为"\*\*"时, 表示该段后续所有匹配均为成功. 具体匹配逻辑参照 
 com\adaptiveMQ\utils\Utils.java
 
-传输层
+## 传输层
 
 CEDA Java API可以支持多种不同的传输层
 client\ProtocolType.java中定义了Java API支持的transport类型, 
@@ -205,3 +206,36 @@ aeron transport基于Aeron Messaging, 可通过配置使用可靠UDP和共享内
 com.adaptiveMQ.client.transport.aeron
 com.adaptiveMQ.server.transport.aeron
 
+## 消息拆分合并
+
+在com\adaptiveMQ\utils\Consts.java定义了CEDA的最大消息长度是64KB。
+超过32K的消息可以使用CEDA Blob Message传送, CEDA会自动完成此类消息的拆包和重组。BLOB的运作逻辑如下：
+1. 通讯发送端调用Message::setBlobField将字节数组写入Message。注意一个消息只能包含一个BLOB Field。
+2. MessageConverter::getGroupMessage拆分包含BlobField成为Message数组, 并删除原消息。
+    拆分(新建)出的每条Message, 包含四部分内容: 
+    
+    1) 原消息的消息头: 比如InterMsgType, Destination, ConnectionID, ReplyTo, SvrID
+    
+    2) 原消息的消息体
+    
+    3) 重组用的信息: 比如表示该条消息是否是拆分消息的标记字段, 拆分消息的数量, 拆分消息的大小, 自身位于拆分消息序列中的序号
+    
+    4) 拆分出的数据: BLOB消息被拆成多份, 每个新消息按顺序包含了原消息的一部分。
+    
+
+3. 通讯发送端会按普通消息的方式把拆分出的消息列表推送给对端, 整个过程为单线程, 
+BLOB消息拆分出的消息列表会按顺序且原子的方式发给对端
+
+4. 通讯对端接收到被拆分出的消息列表, 
+
+5. 如果接收的消息属于拆分消息, 那么按先进先出的顺序方式进入重组模块, 
+当重组模块判断拆分已到达的消息列表可完成组装, 则执行重组动作生成新的Message, 并删除拆分消息列表 
+
+BLOB消息有两个缺省的限制, MAX_BLOB_FIELD_LEN表示BLOB字段的最大长度, 
+MAX_GROUP_FIELD_LEN表示拆分后的消息最大长度, 即BLOB消息会被分拆成N个小消息,
+N=实际长度/MAX_GROUP_FIELD_LEN.
+。
+```
+public static final int MAX_GROUP_FIELD_LEN = 32768;
+public static final int MAX_BLOB_FIELD_LEN = 10240000;
+``` 
